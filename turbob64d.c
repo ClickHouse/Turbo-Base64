@@ -78,8 +78,8 @@ static const unsigned char lut[] = {
                           lut[                _u_>> 24 ])
 
 #define LI32C(_i_) {\
-  unsigned _u = ctou32(ip+_i_*8);   CHECK0(cu|= LU32C(_u)); _u = LU32(_u);\
-  unsigned _v = ctou32(ip+_i_*8+4); CHECK1(cu|= LU32C(_v)); _v = LU32(_v);\
+  unsigned _u = BSWAP32_BE(ctou32(ip+_i_*8));   CHECK0(cu|= LU32C(_u)); _u = LU32(_u);\
+  unsigned _v = BSWAP32_BE(ctou32(ip+_i_*8+4)); CHECK1(cu|= LU32C(_v)); _v = LU32(_v);\
   stou32(op+ _i_*6  , _u);\
   stou32(op+ _i_*6+3, _v);\
 }
@@ -88,8 +88,8 @@ static const unsigned char lut[] = {
 #define LI32(a) LI32C(a)
   #else
 #define LI32(_i_) { \
-  unsigned _u = ctou32(ip+_i_*8);    _u = LU32(_u);\
-  unsigned _v = ctou32(ip+_i_*8+4);  _v = LU32(_v);\
+  unsigned _u = BSWAP32_BE(ctou32(ip+_i_*8));    _u = LU32(_u);\
+  unsigned _v = BSWAP32_BE(ctou32(ip+_i_*8+4));  _v = LU32(_v);\
   stou32(op+ _i_*6  , _u);\
   stou32(op+ _i_*6+3, _v);\
 }
@@ -117,7 +117,7 @@ size_t tb64sdec(const unsigned char *in, size_t inlen, unsigned char *out) {
     if(   ip < (in+inlen)-( 8+OVS))                           { LI32(0); ip += 8; op += (8/4)*3; }
   }
   
-  for(; ip < (in+inlen)-4; ip += 4, op += 3) { unsigned u = ctou32(ip); cu |= LU32C(u); u = LU32(u); stou32(op, u); }
+  for(; ip < (in+inlen)-4; ip += 4, op += 3) { unsigned u = BSWAP32_BE(ctou32(ip)); cu |= LU32C(u); u = LU32(u); stou32(op, u); }
 
   unsigned u = 0, l = inlen - (ip-in);  
   if(l == 4) 															// last 4 bytes
@@ -128,7 +128,7 @@ size_t tb64sdec(const unsigned char *in, size_t inlen, unsigned char *out) {
 	}                                       
   unsigned char *up = (unsigned char *)&u;
   switch(l) {
-    case 4: u = ctou32(ip); cu |= LU32C(u); u = LU32(u);                   *op++ = up[0]; *op++ = up[1]; *op++ = up[2];                                             break; // 4->3 bytes
+    case 4: u = BSWAP32_BE(ctou32(ip)); cu |= LU32C(u); u = LU32(u);                   *op++ = up[0]; *op++ = up[1]; *op++ = up[2];                                             break; // 4->3 bytes
     case 3: u = BSWAP32(lut[ip[0]]<<26 | lut[ip[1]]<<20 | lut[ip[2]]<<14); *op++ = up[0]; *op++ = up[1];                cu |= lut[ip[0]] | lut[ip[1]] | lut[ip[2]]; break; // 3->2 bytes
     case 2: u = BSWAP32(lut[ip[0]]<<26 | lut[ip[1]]<<20);                  *op++ = up[0];                               cu |= lut[ip[0]] | lut[ip[1]];              break; // 2->1 byte
     case 1: u = BSWAP32(lut[ip[0]]);                                       *op++ = up[0];                               cu |= lut[ip[0]];                           break; // 1->1 byte

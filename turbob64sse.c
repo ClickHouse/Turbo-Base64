@@ -473,9 +473,13 @@ char *cpustr(unsigned cpuisa) {
 }
 
 //---------------------------------------------------------------------------------
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+TB64FUNC _tb64e = tb64senc;
+TB64FUNC _tb64d = tb64sdec;
+#else
 TB64FUNC _tb64e = tb64xenc;
 TB64FUNC _tb64d = tb64xdec;
-
+#endif
 static int tb64set;
  
 void tb64ini(unsigned id, unsigned isshort) { 
