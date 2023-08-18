@@ -6,9 +6,13 @@ size_t tb64memcpy(const unsigned char *in, size_t inlen, unsigned char *out);  /
   #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #define BSWAP32(a) a 
 #define BSWAP64(a) a 
+#define BSWAP32_BE(a) bswap32(a)
+#define BSWAP64_BE(a) bswap64(a)
   #else
 #define BSWAP32(a) bswap32(a)
 #define BSWAP64(a) bswap64(a)
+#define BSWAP32_BE(a) a 
+#define BSWAP64_BE(a) a 
   #endif  
 
   #ifdef NB64CHECK
@@ -33,7 +37,7 @@ extern unsigned char tb64lutse[];
 
 #define ETAIL()\
   unsigned _l = (in+inlen) - ip;\
-  if(_l == 3) { unsigned _u = ip[0]<<24 | ip[1]<<16 | ip[2]<<8; stou32(op, SU32(_u)); op+=4; ip+=3; }\
+  if(_l == 3) { unsigned _u = ip[0]<<24 | ip[1]<<16 | ip[2]<<8; stou32(op, BSWAP32_BE(SU32(_u))); op+=4; ip+=3; }\
   else if(_l) { *op++ = tb64lutse[(ip[0]>>2)&0x3f];\
     if(_l == 2) *op++ = tb64lutse[(ip[0] & 0x3) << 4 | (ip[1] & 0xf0) >> 4],\
                 *op++ = tb64lutse[(ip[1] & 0xf) << 2];\

@@ -47,8 +47,8 @@ size_t tb64enclen(size_t n) { return TB64ENCLEN(n); }
   unsigned _u1 = BSWAP32(ctou32(ip+_i_*6 + 3));\
   _u0 = SU32(_u0);\
   _u1 = SU32(_u1);\
-  stou32(op+_i_*8    , _u0);\
-  stou32(op+_i_*8 + 4, _u1);\
+  stou32(op+_i_*8    , BSWAP32_BE(_u0));\
+  stou32(op+_i_*8 + 4, BSWAP32_BE(_u1));\
 }
 
 unsigned char tb64lutse[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -71,7 +71,7 @@ size_t tb64senc(const unsigned char *in, size_t inlen, unsigned char *out) {
 	  #endif
     for(; op <= (out+outlen)-(16+OVS); op += 16, ip += (16/4)*3) { SI32(0); SI32(1); }
   }
-  for(; op < (out+outlen)-4; op += 4, ip += 3) { unsigned _u = BSWAP32(ctou32(ip)); stou32(op, SU32(_u)); }\
+  for(; op < (out+outlen)-4; op += 4, ip += 3) { unsigned _u = BSWAP32(ctou32(ip)); stou32(op, BSWAP32_BE(SU32(_u))); }\
   ETAIL(); 
   return outlen;
 }
